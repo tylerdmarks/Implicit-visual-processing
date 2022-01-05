@@ -8,3 +8,5 @@ Contents:
   -PropixxSaccadeTaskDrawer:    class for handling visual presentations with PsychToolbox
   -generateSaccadeTaskTrials:   function that generates trial condition instructions based on experiment presets
   -EyelinkCalibrate:            performs eyetracking calibration on the Eyelink
+
+
