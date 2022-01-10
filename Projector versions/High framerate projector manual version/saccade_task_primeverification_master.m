@@ -25,10 +25,10 @@ fr = 1440;                       % framerate and highspeed mode
 fix_duration = 0.6:0.05:1.0;       % seconds, vector of possible durations of initial fixation + cue (randomized)
 % adjust primer duration based on participant's calibration results
 primer_duration = 0.005;    % seconds, duration of primer
-increm = 0.005;
 ISI = 0.01;  % seconds, duration of interval between primer and mask
 mask_duration = 0.07;      % seconds, duration of mask
 num_turns = 6;            % number of oscillations to consider chance 
+num_trials = 60;            % number of trials to run
 
 % Fixation parameters
 param.fix_size = 16; % pixels, cross
@@ -110,17 +110,13 @@ if ~test_flag
 end
 
 packet_clock = 1;           % clock that counts 1:1440 to track packet position and flip every 12
-prm_timing_reached = false; % flag for detecting when primer has become invisible
-primer_log = [];            % records primer durations
-osci_tracker = 0;           % tracks number of times performance has oscillated
-trial_counter = 0;          % tracks trial number
-directions = [];             % trajectory of performance. 1 is up. -1 is down
+report_log = zeros(1, num_trials);            % tracking responses
 
 preEXPstart = GetSecs;
 %% Trial loop
-while ~prm_timing_reached
-    trial_counter = trial_counter + 1;
-    if mod(trial_counter, 20) == 1
+for nn = 1:num_trials
+    
+    if mod(nn, 20) == 1
         while true
             % tell presenter which frame we're on for drawing FP
             presenter.setClock(packet_clock);
@@ -249,7 +245,7 @@ while ~prm_timing_reached
         color = presenter.selectColorChannel(presenter.packet_frame);
         newctr = presenter.convertToQuadrant(env.winCtr, env.displaySize, presenter.packet_frame);
 
-        DrawFormattedText(ptr, 'Did you see the square? (Y/N)', newctr(1) - env.displaySize(1)/12, newctr(2) - env.displaySize(2)/8, color);
+        DrawFormattedText(ptr, 'Which side was the square on?', newctr(1) - env.displaySize(1)/12, newctr(2) - env.displaySize(2)/8, color);
 
         % only flips if global packet clock is a multiple of 12
         presenter.present;
@@ -257,11 +253,11 @@ while ~prm_timing_reached
         packet_clock = packet_clock+1;
 
         [~, ~, keycode, ~] = KbCheck(-1);
-        if keycode(KbName('N'))
-            visible = 0;
+        if keycode(KbName('LeftArrow'))
+            resp = 0;
             response_received = 1;
-        elseif keycode(KbName('Y'))
-            visible = 1;
+        elseif keycode(KbName('RightArrow'))
+            resp = 1;
             response_received = 1;
         elseif keycode(KbName('ESCAPE'))
             sca
@@ -274,78 +270,9 @@ while ~prm_timing_reached
             return
         end
     end
-
-    % if they reported seeing the primer, ask which side
-    if visible == 1
-        response_received = 0;
-        % display FP and target boxes while decision is made
-        while ~response_received
-            % tell the presenter which frame we're on
-            presenter.setClock(packet_clock);    
-
-            % Draw target boxes
-            presenter.drawTargetBoxes;
-            % Draw fixation point 
-            presenter.drawFP;
-
-            % convert coords for text (don't have a method for this and I'm lazy)
-            color = presenter.selectColorChannel(presenter.packet_frame);
-            newctr = presenter.convertToQuadrant(env.winCtr, env.displaySize, presenter.packet_frame);
-
-            DrawFormattedText(ptr, 'Which side was it on? (Left/Right)', newctr(1) - env.displaySize(1)/12, newctr(2) - env.displaySize(2)/12, color);
-
-            % only flips if global packet clock is a multiple of 12
-            presenter.present;
-
-            packet_clock = packet_clock+1;
-
-            [~, ~, keycode, ~] = KbCheck(-1);
-            if keycode(KbName('LeftArrow'))
-                resp = 0;
-                response_received = 1;
-            elseif keycode(KbName('RightArrow'))
-                resp = 1;
-                response_received = 1;
-            elseif keycode(KbName('ESCAPE'))
-                sca
-                % Save all workspace variables
-                save(data_filename)
-                % reset projector (turn off fast display)
-                if ~test_flag
-                    ppx.shutdown;
-                end
-                return
-            end
-        end
-    end
-    % track primer durations
-    primer_log = [primer_log param.prm_duration];
     
-    % adjust primer duration
-    if visible == 1 && state.cueDir == resp
-        param.prm_duration = param.prm_duration - param.increm; % shorten if correct response
-        currdirection = -1;
-    else
-        param.prm_duration = param.prm_duration + param.increm; % lengthen if incorrect response
-        currdirection = 1;
-    end
-    
-    % track consecutive oscillations
-    if length(primer_log) > 2
-        if currdirection ~= directions(end) %|| currdirection ~= directions(end-1)     
-            osci_tracker = osci_tracker+1;
-        else
-            osci_tracker = 0;
-        end
-    end
-   
-    if osci_tracker >= num_turns        % if we've oscillated n times, we've reached plateau
-        prm_timing_reached = true;
-    end
-    
-    directions = [directions currdirection];
-    % Check if ESC or Q have been pressed, and stop early if so
-    [~, ~, keyCode] = KbCheck(-1);
+    % record correct/incorrect response
+    report_log(nn) = (resp == state.cueDir);
 
     if keyCode(KbName('ESCAPE')) || keyCode(KbName('q'))
         % Clear screen
@@ -362,8 +289,9 @@ while ~prm_timing_reached
     end
 
 end
-% compute final prime duration
-final_prm_dur = mean(primer_log(end-num_turns:end))/fr;
+% calculate performance
+performance = (sum(report_log)/length(report_log))*100;
+fprintf('Subject performance: %.2f', performance);
 
 EXPtime = GetSecs - preEXPstart;
 
