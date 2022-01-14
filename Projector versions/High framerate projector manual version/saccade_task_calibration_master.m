@@ -66,7 +66,7 @@ HideCursor;
 
 % initialize propixx
 if ~test_flag
-    ppx = propixxControllerManual();
+    ppx = propixxController();
 end
 % projector is initialized in normal display mode
 Screen('Preference', 'SkipSyncTests', 1);  % can't run PTB on my laptop without skipping sync tests
@@ -98,7 +98,7 @@ exptData = [];
 
 % create an instance of the SaccadeTaskDrawer object to handle presentation of different components
 % this object is instantiated with the information from param and stim, and the screen ptr
-presenter = PropixxSaccadeTaskDrawerManual(param, stim, ptr, env);     
+presenter = PropixxSaccadeTaskDrawer(param, stim, ptr, env);     
 % set mask type
 presenter.mask_method = mask_method;
 % set pattern type if using pattern masking

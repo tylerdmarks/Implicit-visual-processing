@@ -24,7 +24,7 @@ data_filename = sprintf('%s.mat', ID);
 fr = 1440;                       % framerate and highspeed mode
 fix_duration = 0.6:0.05:1.0;       % seconds, vector of possible durations of initial fixation + cue (randomized)
 % adjust primer duration based on participant's calibration results
-primer_duration = 0.005;    % seconds, duration of primer
+primer_duration = 0.020;    % seconds, duration of primer
 ISI = 0.01;  % seconds, duration of interval between primer and mask
 mask_duration = 0.07;      % seconds, duration of mask
 num_turns = 6;            % number of oscillations to consider chance 
@@ -55,7 +55,6 @@ param.mask_width = 40; % pixels, line width of mask, should spatially match bord
 param.prm_duration = ceil(primer_duration/(1/fr)); % frames, starting duration of primer presentation 
 param.ISI = ceil(ISI/(1/fr));  % frames, min duration in between primer and mask
 param.mask_duration = ceil(mask_duration/(1/fr)); % frames, duration of mask presentation 
-param.increm = ceil(increm/(1/fr));
 
 %% Initialize
 
@@ -66,7 +65,7 @@ HideCursor;
 
 % initialize propixx
 if ~test_flag
-    ppx = propixxControllerManual();
+    ppx = propixxController();
 end
 % projector is initialized in normal display mode
 Screen('Preference', 'SkipSyncTests', 1);  % can't run PTB on my laptop without skipping sync tests
@@ -98,7 +97,7 @@ exptData = [];
 
 % create an instance of the SaccadeTaskDrawer object to handle presentation of different components
 % this object is instantiated with the information from param and stim, and the screen ptr
-presenter = PropixxSaccadeTaskDrawerManual(param, stim, ptr, env);     
+presenter = PropixxSaccadeTaskDrawer(param, stim, ptr, env);     
 % set mask type
 presenter.mask_method = mask_method;
 % set pattern type if using pattern masking
@@ -274,20 +273,6 @@ for nn = 1:num_trials
     % record correct/incorrect response
     report_log(nn) = (resp == state.cueDir);
 
-    if keyCode(KbName('ESCAPE')) || keyCode(KbName('q'))
-        % Clear screen
-        sca
-
-        % Save all workspace variables
-        save(data_filename)
-        % reset projector (turn off fast display)
-        if ~test_flag
-            ppx.shutdown;
-        end
-
-        return
-    end
-
 end
 % calculate performance
 performance = (sum(report_log)/length(report_log))*100;
@@ -308,7 +293,4 @@ sca
 % Save all workspace variables
 save(data_filename);
 
-disp(final_prm_dur);
-% figure
-% plot(primer_log/fr)
 

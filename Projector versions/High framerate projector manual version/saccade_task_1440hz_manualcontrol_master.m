@@ -18,7 +18,7 @@ mask_method = 'metacontrast';
 % set pattern if using pattern masking
 pattern_type = 'disc';
 % File name, change for each new participant       'subjectnumber_nameoftask_maskmethod_date'
-ID = 'S008_saccadetask_meta_211206';   
+ID = 'S009_saccadetask_meta_220114';   
 
 % set up save directory and save file for experiment data
 fullpath = ('C:\Experiment Data\Implicit visual processing');            % operational folder for this computer
@@ -30,8 +30,8 @@ data_filename = sprintf('%s.mat', ID);
 fr = 1440;                       % framerate and highspeed mode
 cue_duration = 0.6:0.05:1.0;       % seconds, vector of possible durations of initial fixation + cue (randomized)
 % adjust primer duration based on participant's calibration results
-primer_duration_min = 0.024;    % seconds, min duration of primer
-primer_duration_max = 0.024;    % seconds, max duration of primer
+primer_duration_min = 0.020;    % seconds, min duration of primer
+primer_duration_max = 0.020;    % seconds, max duration of primer
 % adjust ISI duration based on participant's calibration results
 ISI_min = 0.010;                % seconds, minimum duration of interval between primer and mask
 ISI_max = 0.010;                % seconds, max duration of "
@@ -164,7 +164,7 @@ exptData = [];
 
 % create an instance of the SaccadeTaskDrawer object to handle presentation of different components
 % this object is instantiated with the information from param and stim, and the screen ptr
-presenter = PropixxSaccadeTaskDrawerManual(param, stim, ptr, env);     
+presenter = PropixxSaccadeTaskDrawer(param, stim, ptr, env);     
 % set mask type
 presenter.mask_method = mask_method;
 % set pattern type if using pattern masking
