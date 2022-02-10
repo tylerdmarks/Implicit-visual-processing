@@ -13,7 +13,7 @@ test_flag = 0;
 mask_method = 'metacontrast';
 pattern_type = 'disc';
 % Change for each new participant
-ID = 'test';     
+ID = 'tm0_up';     
 
 % set up save directory and save file for experiment data
 fullpath = ('C:\Experiment Data\Implicit visual processing');            % operational folder for this computer
@@ -64,18 +64,16 @@ param.increm = ceil(increm/(1/fr));
 commandwindow
 HideCursor;
 
-% initialize propixx
-if ~test_flag
-    ppx = propixxController();
-end
+
 % projector is initialized in normal display mode
 Screen('Preference', 'SkipSyncTests', 1);  % can't run PTB on my laptop without skipping sync tests
 
 if ~test_flag
+    % initialize propixx
+    ppx = propixxController();
     [ptr, winrect] = ppx.initialize(screenID);
 else
     AssertOpenGL;
-    KbName('UnifyKeyNames');
     [ptr,winrect] = Screen('OpenWindow', screenID, 0);
 end
 

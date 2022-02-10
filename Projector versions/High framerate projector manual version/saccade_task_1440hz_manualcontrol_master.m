@@ -18,7 +18,7 @@ mask_method = 'metacontrast';
 % set pattern if using pattern masking
 pattern_type = 'disc';
 % File name, change for each new participant       'subjectnumber_nameoftask_maskmethod_date'
-ID = 'S009_saccadetask_meta_220114';   
+ID = 'S001_saccadetask_meta_220120';   
 
 % set up save directory and save file for experiment data
 fullpath = ('C:\Experiment Data\Implicit visual processing');            % operational folder for this computer
@@ -30,8 +30,8 @@ data_filename = sprintf('%s.mat', ID);
 fr = 1440;                       % framerate and highspeed mode
 cue_duration = 0.6:0.05:1.0;       % seconds, vector of possible durations of initial fixation + cue (randomized)
 % adjust primer duration based on participant's calibration results
-primer_duration_min = 0.020;    % seconds, min duration of primer
-primer_duration_max = 0.020;    % seconds, max duration of primer
+primer_duration_min = 0.021;    % seconds, min duration of primer
+primer_duration_max = 0.021;    % seconds, max duration of primer
 % adjust ISI duration based on participant's calibration results
 ISI_min = 0.010;                % seconds, minimum duration of interval between primer and mask
 ISI_max = 0.010;                % seconds, max duration of "
@@ -90,17 +90,19 @@ expt = generateSaccadeTaskTrials('Exp1');        % test_preset1 = testing preset
 commandwindow
 HideCursor;
 
-% initialize propixx projector controller
-% projector is initialized in normal display mode
-ppx = propixxController();
+
 % can't run PTB on laptop without skipping sync tests
 Screen('Preference', 'SkipSyncTests', 1);  
-[ptr, winrect] = ppx.initialize(screenID);
 
-% if just testing, initialize PTB on its own
-if test_flag
+
+if ~test_flag
+    % initialize propixx projector controller
+    % projector is initialized in normal display mode
+    ppx = propixxController();
+    [ptr, winrect] = ppx.initialize(screenID);
+else
+    % if just testing, initialize PTB on its own
     AssertOpenGL;
-    KbName('UnifyKeyNames');
     [ptr,winrect] = Screen('OpenWindow', screenID, 0);
 end
 
@@ -170,8 +172,10 @@ presenter.mask_method = mask_method;
 % set pattern type if using pattern masking
 presenter.pattern_type = pattern_type;
 
-% set projector mode to high speed
-ppx.setMode(fr);         
+if ~test_flag
+    % set projector mode to high speed
+    ppx.setMode(fr);     
+end
 
 % timing measurements
 timing.fix = [];
@@ -594,9 +598,11 @@ while state.runningYN
                 disp(status)
                 Eyelink('Shutdown')
             end
-
-            % reset projector (turn off fast display)
-            ppx.shutdown;
+            
+            if ~test_flag
+                % reset projector (turn off fast display)
+                ppx.shutdown;
+            end
 
             return
         end
@@ -640,7 +646,9 @@ while state.runningYN
                 ppx.setMode(fr);
             else
                 fprintf('Calibration check goes here\n');
-                ppx.setMode(fr);
+                if ~test_flag
+                    ppx.setMode(fr);
+                end
             end
         end
     end
@@ -649,8 +657,10 @@ end
 
 EXPtime = GetSecs - preEXPstart;
 
-%disengage fast mode on projector
-ppx.shutdown();
+if ~test_flag
+    %disengage fast mode on projector
+    ppx.shutdown();
+end
 
 %% Clean up
 % Clear screen

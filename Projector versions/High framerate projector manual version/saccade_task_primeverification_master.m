@@ -24,7 +24,7 @@ data_filename = sprintf('%s.mat', ID);
 fr = 1440;                       % framerate and highspeed mode
 fix_duration = 0.6:0.05:1.0;       % seconds, vector of possible durations of initial fixation + cue (randomized)
 % adjust primer duration based on participant's calibration results
-primer_duration = 0.020;    % seconds, duration of primer
+primer_duration = 0.021;    % seconds, duration of primer
 ISI = 0.01;  % seconds, duration of interval between primer and mask
 mask_duration = 0.07;      % seconds, duration of mask
 num_turns = 6;            % number of oscillations to consider chance 
@@ -63,18 +63,15 @@ param.mask_duration = ceil(mask_duration/(1/fr)); % frames, duration of mask pre
 commandwindow
 HideCursor;
 
-% initialize propixx
-if ~test_flag
-    ppx = propixxController();
-end
 % projector is initialized in normal display mode
 Screen('Preference', 'SkipSyncTests', 1);  % can't run PTB on my laptop without skipping sync tests
 
 if ~test_flag
+    % initialize propixx
+    ppx = propixxController();
     [ptr, winrect] = ppx.initialize(screenID);
 else
     AssertOpenGL;
-    KbName('UnifyKeyNames');
     [ptr,winrect] = Screen('OpenWindow', screenID, 0);
 end
 
